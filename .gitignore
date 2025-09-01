@@ -84,3 +84,9 @@ jspm_packages/
 
 # TernJS port file
 .tern-port
+
+# Large files
+*.zip
+*.rar
+*.7z
+*.tar.gz
