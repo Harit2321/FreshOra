@@ -3,8 +3,8 @@
 
 // Each entry represents a specific action you can ask the server to do. For example, login has the specific path (/api/user/login) and the required method (post). This way, you don't have to type out the full URL and method every time you want to log a user in.
 
-// export const baseURL = import.meta.env.VITE_API_URL
-export const baseURL = 'http://localhost:8080'
+export const baseURL = import.meta.env.VITE_API_URL
+// export const baseURL = process.env.BACKEND_URL
 
 const SummaryApi = {
     // User APIs
