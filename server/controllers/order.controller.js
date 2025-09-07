@@ -127,10 +127,21 @@ export async function CashOnDeliveryOrderController(request, response) {
         })
 
     } catch (error) {
+        console.error('Stripe payment error:', {
+            message: error.message,
+            type: error.type,
+            code: error.code,
+            stack: error.stack
+        })
+        
         return response.status(500).json({
-            message: error.message || error,
+            message: error.message || 'Payment processing failed',
             error: true,
-            success: false
+            success: false,
+            stripeError: {
+                type: error.type,
+                code: error.code
+            }
         })
     }
 }
@@ -219,6 +230,18 @@ export async function paymentController(request, response) {
             }
         })
 
+        // Verify Stripe is properly configured
+        if (!process.env.STRIPE_SECRET_KEY) {
+            return response.status(500).json({
+                message: "Stripe configuration error: Secret key not found",
+                error: true,
+                success: false
+            })
+        }
+
+        console.log('Stripe Secret Key exists:', !!process.env.STRIPE_SECRET_KEY)
+        console.log('Frontend URL:', process.env.FRONTEND_URL)
+
         const params = {
             submit_type: 'pay',
             mode: 'payment',
@@ -237,9 +260,17 @@ export async function paymentController(request, response) {
         
         const session = await Stripe.checkout.sessions.create(params)
         
-        console.log('Stripe session created successfully:', session.id)
+        console.log('Stripe session created successfully:', {
+            id: session.id,
+            url: session.url,
+            payment_status: session.payment_status
+        })
         
-        return response.status(200).json(session)
+        return response.status(200).json({
+            id: session.id,
+            url: session.url,
+            payment_status: session.payment_status
+        })
 
     } catch (error) {
         return response.status(500).json({
