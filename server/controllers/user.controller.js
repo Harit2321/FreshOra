@@ -450,15 +450,33 @@ export async function refreshToken(request,response){
         console.log('Request cookies:', JSON.stringify(request.cookies, null, 2));
         console.log('Environment check - SECRET_KEY_REFRESH_TOKEN exists:', !!process.env.SECRET_KEY_REFRESH_TOKEN);
         
-        const refreshToken = request.cookies.refreshToken || request?.headers?.authorization?.split(" ")[1]  /// [ Bearer token]
+        let refreshToken = request.cookies.refreshToken || request?.headers?.authorization?.split(" ")[1]  /// [ Bearer token]
         
-        console.log('Extracted refresh token:', refreshToken ? 'EXISTS' : 'NOT_FOUND');
+        console.log('Raw refresh token:', refreshToken);
+        console.log('Token length:', refreshToken?.length);
+        console.log('Token first 20 chars:', refreshToken?.substring(0, 20));
         console.log('Token source:', request.cookies.refreshToken ? 'COOKIE' : request?.headers?.authorization ? 'HEADER' : 'NONE');
 
         if(!refreshToken){
             console.log('ERROR: No refresh token found');
             return response.status(401).json({
                 message : "Invalid token",
+                error  : true,
+                success : false
+            })
+        }
+
+        // Clean the token - remove any extra whitespace or quotes
+        refreshToken = refreshToken.trim();
+        
+        // Basic JWT format validation (should have 3 parts separated by dots)
+        const tokenParts = refreshToken.split('.');
+        console.log('Token parts count:', tokenParts.length);
+        
+        if (tokenParts.length !== 3) {
+            console.log('ERROR: Invalid JWT format - should have 3 parts');
+            return response.status(401).json({
+                message : "Malformed token",
                 error  : true,
                 success : false
             })

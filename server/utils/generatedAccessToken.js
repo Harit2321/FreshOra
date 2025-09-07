@@ -14,7 +14,7 @@ const generatedAccessToken = async(userId)=>{
             throw new Error('SECRET_KEY_ACCESS_TOKEN environment variable is missing');
         }
         
-        const token = await jwt.sign({ id : userId},
+        const token = await jwt.sign({ _id : userId},
             process.env.SECRET_KEY_ACCESS_TOKEN,
             { expiresIn : '5h'}
         )
