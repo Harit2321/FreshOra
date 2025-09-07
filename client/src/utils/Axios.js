@@ -69,6 +69,16 @@ const refreshAccessToken = async () => {
     try {
         // Get the refresh token from storage.
         const refreshToken = localStorage.getItem("refreshToken");
+        
+        // Check if refresh token exists and is valid
+        if (!refreshToken || refreshToken === 'null' || refreshToken === 'undefined') {
+            console.log('No valid refresh token found in localStorage');
+            // Clear invalid tokens and redirect to login
+            localStorage.removeItem('accesstoken');
+            localStorage.removeItem('refreshToken');
+            window.location.href = '/login';
+            return null;
+        }
 
         // Make a request to the 'refreshToken' endpoint.
         const response = await Axios({
@@ -86,8 +96,11 @@ const refreshAccessToken = async () => {
         return accessToken;
     } catch (error) {
         console.log("Failed to refresh token", error);
-        // If refreshing fails (e.g., refresh token is also invalid), the user will need to log in again.
-        // You might want to clear local storage and redirect to the login page here.
+        // Clear tokens and redirect to login on refresh failure
+        localStorage.removeItem('accesstoken');
+        localStorage.removeItem('refreshToken');
+        window.location.href = '/login';
+        return null;
     }
 };
 
