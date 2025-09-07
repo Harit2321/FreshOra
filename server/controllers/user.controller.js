@@ -444,9 +444,19 @@ export async function resetpassword(request,response){
 //refresh token controler
 export async function refreshToken(request,response){
     try {
+        console.log('=== REFRESH TOKEN DEBUG START ===');
+        console.log('Request method:', request.method);
+        console.log('Request headers:', JSON.stringify(request.headers, null, 2));
+        console.log('Request cookies:', JSON.stringify(request.cookies, null, 2));
+        console.log('Environment check - SECRET_KEY_REFRESH_TOKEN exists:', !!process.env.SECRET_KEY_REFRESH_TOKEN);
+        
         const refreshToken = request.cookies.refreshToken || request?.headers?.authorization?.split(" ")[1]  /// [ Bearer token]
+        
+        console.log('Extracted refresh token:', refreshToken ? 'EXISTS' : 'NOT_FOUND');
+        console.log('Token source:', request.cookies.refreshToken ? 'COOKIE' : request?.headers?.authorization ? 'HEADER' : 'NONE');
 
         if(!refreshToken){
+            console.log('ERROR: No refresh token found');
             return response.status(401).json({
                 message : "Invalid token",
                 error  : true,
@@ -454,9 +464,12 @@ export async function refreshToken(request,response){
             })
         }
 
+        console.log('Attempting to verify token...');
         const verifyToken = await jwt.verify(refreshToken,process.env.SECRET_KEY_REFRESH_TOKEN)
+        console.log('Token verification result:', verifyToken ? 'SUCCESS' : 'FAILED');
 
         if(!verifyToken){
+            console.log('ERROR: Token verification failed');
             return response.status(401).json({
                 message : "token is expired",
                 error : true,
@@ -465,8 +478,11 @@ export async function refreshToken(request,response){
         }
 
         const userId = verifyToken?._id
+        console.log('Extracted userId:', userId);
 
+        console.log('Generating new access token...');
         const newAccessToken = await generatedAccessToken(userId)
+        console.log('New access token generated:', newAccessToken ? 'SUCCESS' : 'FAILED');
 
         const cookiesOption = {
             httpOnly : true,
@@ -474,8 +490,10 @@ export async function refreshToken(request,response){
             sameSite : "None"
         }
 
+        console.log('Setting cookie with options:', JSON.stringify(cookiesOption, null, 2));
         response.cookie('accessToken',newAccessToken,cookiesOption)
 
+        console.log('=== REFRESH TOKEN SUCCESS ===');
         return response.json({
             message : "New Access token generated",
             error : false,
@@ -487,10 +505,21 @@ export async function refreshToken(request,response){
 
 
     } catch (error) {
+        console.error('=== REFRESH TOKEN ERROR ===');
+        console.error('Error name:', error.name);
+        console.error('Error message:', error.message);
+        console.error('Error stack:', error.stack);
+        console.error('Full error object:', JSON.stringify(error, Object.getOwnPropertyNames(error), 2));
+        
         return response.status(500).json({
             message : error.message || error,
             error : true,
-            success : false
+            success : false,
+            debug: {
+                errorName: error.name,
+                errorMessage: error.message,
+                timestamp: new Date().toISOString()
+            }
         })
     }
 }
