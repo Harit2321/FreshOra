@@ -459,10 +459,10 @@ export async function refreshToken(request,response){
         console.log('Token first 20 chars:', refreshToken?.substring(0, 20));
         console.log('Token source:', request.cookies.refreshToken ? 'COOKIE' : request?.headers?.authorization ? 'HEADER' : 'NONE');
 
-        if(!refreshToken){
-            console.log('ERROR: No refresh token found');
+        if(!refreshToken || refreshToken === 'null' || refreshToken === 'undefined'){
+            console.log('ERROR: No valid refresh token found - token is:', refreshToken);
             return response.status(401).json({
-                message : "Invalid token",
+                message : "No valid refresh token provided",
                 error  : true,
                 success : false
             })
@@ -476,9 +476,10 @@ export async function refreshToken(request,response){
         console.log('Token parts count:', tokenParts.length);
         
         if (tokenParts.length !== 3) {
-            console.log('ERROR: Invalid JWT format - should have 3 parts');
+            console.log('ERROR: Invalid JWT format - should have 3 parts, got:', tokenParts.length);
+            console.log('Token parts:', tokenParts);
             return response.status(401).json({
-                message : "Malformed token",
+                message : "Malformed token - invalid JWT format",
                 error  : true,
                 success : false
             })
