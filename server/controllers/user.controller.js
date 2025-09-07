@@ -449,6 +449,8 @@ export async function refreshToken(request,response){
         console.log('Request headers:', JSON.stringify(request.headers, null, 2));
         console.log('Request cookies:', JSON.stringify(request.cookies, null, 2));
         console.log('Environment check - SECRET_KEY_REFRESH_TOKEN exists:', !!process.env.SECRET_KEY_REFRESH_TOKEN);
+        console.log('SECRET_KEY_REFRESH_TOKEN length:', process.env.SECRET_KEY_REFRESH_TOKEN?.length);
+        console.log('SECRET_KEY_REFRESH_TOKEN first 10 chars:', process.env.SECRET_KEY_REFRESH_TOKEN?.substring(0, 10));
         
         let refreshToken = request.cookies.refreshToken || request?.headers?.authorization?.split(" ")[1]  /// [ Bearer token]
         
